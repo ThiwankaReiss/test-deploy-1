@@ -4,15 +4,11 @@ import * as tmImage from '@teachablemachine/image';
 import ARModel from '../canvas/ARModel';
 
 const TeachableMachineTwo = () => {
-
-
-
     const webcamRef = useRef(null);
     const [labelContainer, setLabelContainer] = useState([]);
     const [model, setModel] = useState(null);
     const [maxPredictions, setMaxPredictions] = useState(0);
-    const [locationContainer,setLocationContainer]=useState([])
-
+    const [locationContainer, setLocationContainer] = useState([]);
 
     const URL = './my_model_two/'; // Path to your model
 
@@ -28,8 +24,16 @@ const TeachableMachineTwo = () => {
         setModel(loadedModel);
         setMaxPredictions(loadedModel.getTotalClasses());
 
-        // Setup webcam
-        const webcam = new tmImage.Webcam(200, 200, true); // width, height, flip
+        // Setup webcam with back camera if available
+        const constraints = {
+            video: {
+                facingMode: "environment", // Request the back camera
+                width: 200,
+                height: 200,
+            },
+        };
+
+        const webcam = new tmImage.Webcam(200, 200, true, constraints); // width, height, flip, constraints
         await webcam.setup();
         await webcam.play();
         webcamRef.current = webcam;
@@ -43,10 +47,8 @@ const TeachableMachineTwo = () => {
         window.requestAnimationFrame(() => loop(webcam));
     };
 
-
     // Divide canvas into a grid and predict on each section
     const predict = async (webcam) => {
-
         if (model) {
             const { canvas } = webcam;
             const sectionWidth = canvas.width / GRID_SIZE;
@@ -67,11 +69,8 @@ const TeachableMachineTwo = () => {
 
                     // Run prediction on the section
                     const predictions = await model.predict(tempCanvas);
-                    setLabelContainer(predictions)
                     predictions.forEach((p) => {
-                        // console.log(p.probability)
                         if (p.probability >= 0.97) {
-                            // If detected, calculate the trapezium coordinates
                             const topLeft = [col, row];
                             const topRight = [col + 1, row];
                             const bottomRight = [col + 1, row + 1];
@@ -83,47 +82,10 @@ const TeachableMachineTwo = () => {
                             });
                         }
                     });
-                    if (locations.length > 0) {
-                        // console.log('Detected locations:', locations);
-                        setLocationContainer(locations)
-                    }
-                    // if (locations.length > 0) {
-
-
-                    //     var min_x = locations[0].coordinates[0][0]
-                    //     var max_x = locations[0].coordinates[0][0]
-                    //     var min_y = locations[0].coordinates[0][1]
-                    //     var max_y = locations[0].coordinates[0][1]
-
-                    //     locations.forEach((loca) => {
-                    //         loca.coordinates.forEach((cordi) => {
-                    //             if (cordi[0] < min_x) {
-                    //                 min_x = cordi[0]
-                    //             }
-                    //             if (cordi[0] > max_x) {
-                    //                 max_x = cordi[0]
-                    //             }
-                    //             if (cordi[1] < min_y) {
-                    //                 min_y = cordi[1]
-                    //             }
-                    //             if (cordi[1] > max_y) {
-                    //                 max_y = cordi[1]
-                    //             }
-                    //         })
-                    //     })
-                    //     console.log([[min_x, min_y], [max_x, min_y], [min_x, max_y], [max_x, max_y]])
-
-                    // }
-
                 }
             }
-
-
-
-            // console.log('Detected locations:', locations);
-            setLabelContainer(locations);
+            setLocationContainer(locations);
         }
-
     };
 
     useEffect(() => {
@@ -159,7 +121,6 @@ const TeachableMachineTwo = () => {
                 </div>
                 <div>
                     {/* <ARModel></ARModel> */}
-
                 </div>
                 <div id="label-container">
                     {labelContainer.map((label, index) => (
@@ -168,7 +129,7 @@ const TeachableMachineTwo = () => {
                         </div>
                     ))}
                 </div>
-                <div >
+                <div>
                     {locationContainer.map((label, index) => (
                         <div key={index}>
                             {label.className}: ({label.probability})
@@ -176,7 +137,6 @@ const TeachableMachineTwo = () => {
                     ))}
                 </div>
             </div>
-
         </>
     );
 };
