@@ -7,7 +7,7 @@ const TeachableMachine = () => {
     const [model, setModel] = useState(null);
     const [maxPredictions, setMaxPredictions] = useState(0);
 
-    const URL = './test-deploy-1/my_model/'; // Path to your model
+    const URL = './my_model/'; // Path to your model
 
     // Load the model and setup the webcam
     const init = async () => {
